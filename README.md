@@ -85,7 +85,7 @@ Submit voice feedback.
 
 - **Backend:** Bun, Hono, SQLite/Turso
 - **Frontend:** React, TypeScript, Vite
-- **AI Services:** ElevenLabs (STT/TTS), OpenAI (GPT-4o-mini)
+- **AI Services:** ElevenLabs (STT/TTS), OpenAI (gpt-5-nano-2025-08-07)
 - **Storage:** S3-compatible for audio files
 
 ## License

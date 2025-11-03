@@ -7,7 +7,8 @@
     "start": "bun run src/index.ts"
   },
   "dependencies": {
-    "hono": "^4.0.0"
+    "hono": "^4.0.0",
+    "@echo-feedback/types": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest"

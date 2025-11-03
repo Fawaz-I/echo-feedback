@@ -39,7 +39,7 @@ and exposes a developer-friendly widget + backend API that can integrate into an
 | ---------------- | ------------------------- | ------------------------------------------------- |
 | Backend          | Bun + Hono                | Lightweight, TypeScript-native, fast API routes   |
 | Transcription    | ElevenLabs STT            | Included in Fawaz’s free subscription (60+ hours) |
-| Summarization    | GPT-4o-mini               | Reliable JSON output, low latency                 |
+| Summarization    | gpt-5-nano-2025-08-07 (configurable) | Ultra-fast, cost-effective JSON classification |
 | Speech Synthesis | ElevenLabs TTS            | Natural-sounding voice summaries                  |
 | Frontend         | React + Vite              | Developer-friendly SDK distribution               |
 | Data             | SQLite / Turso            | Simple to host and query                          |
@@ -146,10 +146,10 @@ import { EchoFeedback } from "@echo-feedback/react";
 
 ## 🪜 Milestones (Execution Plan)
 
-| Day  | Deliverable                                          |
-| ---- | ---------------------------------------------------- |
-| 1–2  | Frontend record/upload widget + backend API skeleton |
-| 3–4  | Integrate ElevenLabs STT + GPT summarization         |
+| Day  | Deliverable                                          | Status |
+| ---- | ---------------------------------------------------- | ------ |
+| 1–2  | Frontend record/upload widget + backend API skeleton | ✅ Complete |
+| 3–4  | Integrate ElevenLabs STT + GPT summarization         | ✅ Complete |
 | 5–6  | Add ElevenLabs TTS + webhook delivery                |
 | 7    | Build Web Component + theming                        |
 | 8–10 | Admin UI, tests, docs, deploy                        |
@@ -186,6 +186,7 @@ Return JSON with:
 - Environment variables:
   - `ELEVEN_API_KEY`
   - `OPENAI_API_KEY`
+  - `SUMMARIZER_MODEL` (default: gpt-5-nano-2025-08-07)
   - `DATABASE_URL`
   - `WEBHOOK_SECRET`
 - Enforce ≤120 s recording limit.

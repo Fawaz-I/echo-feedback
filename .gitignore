@@ -35,5 +35,9 @@ npm-debug.log*
 *.db-wal
 
 # Uploaded files
-uploads/
-summaries/
+uploads/*
+summaries/*
+
+# Keep directory structure
+!uploads/.gitkeep
+!summaries/.gitkeep
