@@ -1,0 +1,13 @@
+{
+  "description": "Template configuration for this project. See https://www.codebuff.com/config for all options.",
+  "startupProcesses": [
+    {
+      "name": "server",
+      "command": "bun run --filter backend dev",
+      "enabled": true,
+      "stdoutFile": "logs/server.log"
+    }
+  ],
+  "fileChangeHooks": [],
+  "maxAgentSteps": 25
+}
