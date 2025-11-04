@@ -39,6 +39,7 @@ export function template({
 }: TemplateProps): string {
   const isRecording = state === 'recording';
   const isProcessing = state === 'processing';
+  const isComplete = state === 'complete';
   const isError = state === 'error';
 
   return `
@@ -53,6 +54,16 @@ export function template({
           ${subtitle !== null && subtitle !== '' ? `<p part="subtitle">${subtitle}</p>` : subtitle === null ? `<p part="subtitle">Record up to ${maxDuration} seconds</p>` : ''}
         </slot>
       </div>
+
+      <!-- Success Message -->
+      ${isComplete && !isRecording ? `
+        <div part="success" class="ef-success">
+          <slot name="success">
+            <span>✅</span>
+            <span>Thanks for your feedback! Processing in background...</span>
+          </slot>
+        </div>
+      ` : ''}
 
       <!-- Error Message -->
       ${isError ? `
@@ -91,7 +102,8 @@ export function template({
 
         <slot name="status">
           <p part="status" class="ef-status">
-            ${isProcessing ? statusProcessing :
+            ${isComplete ? 'Feedback received! Feel free to navigate away.' :
+              isProcessing ? statusProcessing :
               isRecording ? statusRecording :
               statusIdle}
           </p>

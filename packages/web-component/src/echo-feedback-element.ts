@@ -207,13 +207,60 @@ export class EchoFeedbackElement extends HTMLElement {
       return;
     }
 
+    // Show immediate success state
+    this.setState('complete');
+
     if (this.autoUpload) {
-      await this.upload(audioBlob);
+      // Fire-and-forget upload in background
+      this.uploadInBackground(audioBlob);
     } else {
-      this.setState('idle');
+      // Manual mode - just show success
+      setTimeout(() => this.setState('idle'), 3000);
     }
   }
 
+  private uploadInBackground(audioBlob: Blob) {
+    // Don't await - let it run in background
+    (async () => {
+      this.emit('echo-upload', { size: audioBlob.size });
+
+      try {
+        const formData = new FormData();
+        formData.append('appId', this.appId);
+        formData.append('audio', audioBlob, 'feedback.webm');
+        formData.append('metadata', JSON.stringify({
+          pageUrl: window.location.href,
+          device: navigator.userAgent,
+          locale: navigator.language,
+          timestamp: new Date().toISOString(),
+        }));
+
+        const response = await fetch(`${this.endpoint}/api/feedback`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.statusText}`);
+        }
+
+        const data: FeedbackResponse = await response.json();
+        this.emit('echo-complete', data);
+        
+        // Show results in slots if provided
+        this.displayResults(data);
+      } catch (error) {
+        // Silent fail - user already got confirmation
+        console.error('Background upload failed:', error);
+        this.emit('echo-error', { 
+          message: 'Background upload failed', 
+          error: error as Error 
+        });
+      }
+    })();
+  }
+
+  // Kept for manual upload via public API
   private async upload(audioBlob: Blob) {
     this.setState('processing');
     this.emit('echo-upload', { size: audioBlob.size });

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import type { FeedbackResponse } from '@echo-feedback/types';
-import { MicIcon, StopIcon, LoaderIcon, AlertIcon } from './icons';
+import { MicIcon, StopIcon, AlertIcon } from './icons';
 
 interface EchoFeedbackProps {
   appId: string;
@@ -14,6 +14,7 @@ interface EchoFeedbackProps {
   statusRecording?: string;
   statusProcessing?: string;
   errorMessage?: string;
+  onRecordingStop?: () => void;
   onComplete?: (data: FeedbackResponse) => void;
 }
 
@@ -28,10 +29,11 @@ function EchoFeedback({
   statusRecording = 'Click to stop recording',
   statusProcessing = 'Processing...',
   errorMessage,
+  onRecordingStop,
   onComplete 
 }: EchoFeedbackProps) {
   const [isRecording, setIsRecording] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [showThanks, setShowThanks] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
   
@@ -98,37 +100,44 @@ function EchoFeedback({
       return;
     }
 
-    setIsProcessing(true);
+    // Show immediate success feedback
+    setShowThanks(true);
+    setRecordingTime(0);
 
-    try {
-      const formData = new FormData();
-      formData.append('appId', appId);
-      formData.append('audio', audioBlob, 'feedback.webm');
-      formData.append('metadata', JSON.stringify({
-        pageUrl: window.location.href,
-        device: navigator.userAgent,
-        locale: navigator.language,
-        timestamp: new Date().toISOString(),
-      }));
+    // Notify parent that recording stopped (for demo purposes)
+    onRecordingStop?.();
 
-      const response = await fetch(`${endpoint}/api/feedback`, {
-        method: 'POST',
-        body: formData,
-      });
+    // Auto-hide thanks message after 3 seconds
+    setTimeout(() => setShowThanks(false), 3000);
 
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
+    // Fire-and-forget upload in background
+    (async () => {
+      try {
+        const formData = new FormData();
+        formData.append('appId', appId);
+        formData.append('audio', audioBlob, 'feedback.webm');
+        formData.append('metadata', JSON.stringify({
+          pageUrl: window.location.href,
+          device: navigator.userAgent,
+          locale: navigator.language,
+          timestamp: new Date().toISOString(),
+        }));
+
+        const response = await fetch(`${endpoint}/api/feedback`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.statusText}`);
+        }
+
+        const data: FeedbackResponse = await response.json();
+        onComplete?.(data);
+      } catch (err) {
+        console.error('Background upload failed:', err);
       }
-
-      const data: FeedbackResponse = await response.json();
-      onComplete?.(data);
-      setRecordingTime(0);
-    } catch (err) {
-      setError(errorMessage || 'Failed to submit feedback. Please try again.');
-      console.error('Error submitting feedback:', err);
-    } finally {
-      setIsProcessing(false);
-    }
+    })();
   };
 
   const formatTime = (seconds: number) => {
@@ -206,6 +215,25 @@ function EchoFeedback({
         ))}
       </div>
 
+      {showThanks && (
+        <div style={{
+          background: '#f0fdf4',
+          border: '1px solid #bbf7d0',
+          borderRadius: '8px',
+          padding: variant === 'small' ? '0.75rem' : '1rem',
+          marginBottom: styles.gap,
+          color: '#166534',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.5rem',
+          fontSize: styles.statusSize,
+        }}>
+          <span>✅</span>
+          <span>Thanks for your feedback!</span>
+        </div>
+      )}
+
       {error && (
         <div style={{
           background: '#fef2f2',
@@ -240,7 +268,7 @@ function EchoFeedback({
 
         <button
           onClick={isRecording ? stopRecording : startRecording}
-          disabled={isProcessing}
+          disabled={false}
           style={{
             background: isRecording ? '#0a0a0a' : '#0a0a0a',
             color: '#ffffff',
@@ -248,40 +276,30 @@ function EchoFeedback({
             borderRadius: '50%',
             width: `${styles.buttonSize}px`,
             height: `${styles.buttonSize}px`,
-            cursor: isProcessing ? 'not-allowed' : 'pointer',
+            cursor: 'pointer',
             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            opacity: isProcessing ? 0.5 : 1,
+            opacity: 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
           }}
           onMouseEnter={(e) => {
-            if (!isProcessing) {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)';
-            }
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)';
           }}
           onMouseLeave={(e) => {
-            if (!isProcessing) {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)';
-            }
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)';
           }}
           onMouseDown={(e) => {
-            if (!isProcessing) {
-              e.currentTarget.style.transform = 'scale(0.95)';
-            }
+            e.currentTarget.style.transform = 'scale(0.95)';
           }}
           onMouseUp={(e) => {
-            if (!isProcessing) {
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }
+            e.currentTarget.style.transform = 'scale(1.05)';
           }}
         >
-          {isProcessing ? (
-            <LoaderIcon className="loading-spinner" style={{ width: `${styles.iconSize}px`, height: `${styles.iconSize}px` }} />
-          ) : isRecording ? (
+          {isRecording ? (
             <StopIcon className="" style={{ width: `${styles.iconSize}px`, height: `${styles.iconSize}px` }} />
           ) : (
             <MicIcon className="" style={{ width: `${styles.iconSize}px`, height: `${styles.iconSize}px` }} />
@@ -289,7 +307,7 @@ function EchoFeedback({
         </button>
 
         <p style={{ color: '#737373', fontSize: styles.statusSize, margin: 0 }}>
-          {isProcessing ? statusProcessing : isRecording ? statusRecording : statusIdle}
+          {isRecording ? statusRecording : statusIdle}
         </p>
       </div>
     </div>

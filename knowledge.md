@@ -1,6 +1,6 @@
 # Echo Feedback — Project Knowledge
 
-Voice-first feedback SDK and API built by **Fawaz Ilupeju**.
+Voice-first feedback SDK and API.
 
 Echo Feedback enables users to record spoken feedback instead of typing.
 It processes audio → transcript → summary → category → sentiment → (optional) TTS summary,
@@ -153,7 +153,7 @@ import { EchoFeedback } from "@echo-feedback/react";
 | 3–4  | Integrate ElevenLabs STT + GPT summarization         | ✅ Complete |
 | 5–6  | Add ElevenLabs TTS + webhook delivery                | ✅ Webhooks Complete |
 | 7    | Build Web Component + theming                        | ✅ Complete |
-| 8–10 | Admin UI, tests, docs, deploy                        |
+| 8–10 | Tests, docs, deploy setup                            | ✅ Complete |
 
 ---
 
@@ -218,6 +218,7 @@ Return JSON with:
 ## 🧩 Design Principles
 
 - **Voice-first** feedback: frictionless and accessible.
+- **Fire-and-forget UX**: User gets immediate "Thanks!" message after recording stops, can navigate away immediately. Processing happens silently in background. For demos, parent app shows skeleton card → populated results.
 - **Developer-first** integration: single-line SDK embed.
 - **Privacy-aware** by default.
 - **Low cost / performant** (Bun runtime, ElevenLabs free tier).

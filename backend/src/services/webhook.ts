@@ -240,6 +240,23 @@ function formatNotionPayload(feedback: WebhookPayload, databaseId: string): unkn
 /**
  * Detect webhook type from URL and format accordingly
  */
+export function formatWebhookPayload(feedback: Partial<FeedbackItem>, webhookUrl: string): unknown {
+  const payload: WebhookPayload = {
+    id: feedback.id!,
+    appId: feedback.app_id!,
+    timestamp: feedback.created_at || new Date().toISOString(),
+    transcript: feedback.transcript!,
+    summary: feedback.summary!,
+    category: feedback.category!,
+    sentiment: feedback.sentiment!,
+    priority: feedback.priority!,
+    audioUrl: feedback.audio_url!,
+    metadata: (feedback.metadata || {}) as Record<string, unknown>,
+  };
+  
+  return formatPayload(payload, webhookUrl);
+}
+
 function formatPayload(feedback: WebhookPayload, webhookUrl: string): unknown {
   const url = webhookUrl.toLowerCase();
 
@@ -261,6 +278,21 @@ function formatPayload(feedback: WebhookPayload, webhookUrl: string): unknown {
 }
 
 /**
+ * Deliver webhook
+ */
+export async function deliverWebhook(
+  webhookUrl: string,
+  feedback: Partial<FeedbackItem>,
+  secret?: string
+): Promise<{ status: 'sent' | 'failed'; error?: string }> {
+  const result = await sendWebhook(feedback, { url: webhookUrl, secret });
+  return {
+    status: result.success ? 'sent' : 'failed',
+    error: result.error,
+  };
+}
+
+/**
  * Send webhook with retry logic
  */
 export async function sendWebhook(
@@ -277,7 +309,7 @@ export async function sendWebhook(
     const payload: WebhookPayload = {
       id: feedback.id!,
       appId: feedback.app_id!,
-      timestamp: feedback.created_at?.toISOString() || new Date().toISOString(),
+      timestamp: typeof feedback.created_at === 'string' ? feedback.created_at : new Date().toISOString(),
       transcript: feedback.transcript!,
       summary: feedback.summary!,
       category: feedback.category!,

@@ -12,6 +12,9 @@
   --ef-error: #991b1b;
   --ef-error-bg: #fef2f2;
   --ef-error-border: #fecaca;
+  --ef-success: #166534;
+  --ef-success-bg: #f0fdf4;
+  --ef-success-border: #bbf7d0;
   
   /* Spacing */
   --ef-radius: 12px;
@@ -75,6 +78,33 @@
   font-size: var(--ef-font-size-sm);
   color: var(--ef-muted-fg);
   margin: 0;
+}
+
+/* Success */
+.ef-success {
+  background: var(--ef-success-bg);
+  color: var(--ef-success);
+  border: 1px solid var(--ef-success-border);
+  border-radius: calc(var(--ef-radius) / 2);
+  padding: 1rem;
+  margin-bottom: var(--ef-gap);
+  font-size: var(--ef-font-size-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Error */

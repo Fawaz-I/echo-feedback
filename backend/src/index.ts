@@ -31,6 +31,15 @@ if (USE_ELEVENLABS) {
 // Enable CORS for frontend development
 app.use('/*', cors());
 
+// Health check endpoint
+app.get('/health', (c) => {
+  return c.json({
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Serve uploaded audio files
 app.use('/uploads/*', serveStatic({ root: './' }));
 

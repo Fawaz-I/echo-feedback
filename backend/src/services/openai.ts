@@ -37,7 +37,9 @@ export async function transcribeAudio(
   try {
     const formData = new FormData();
     formData.append('file', audioBlob, 'audio.webm');
-    formData.append('model', 'whisper-1');
+    formData.append('model', 'whisper-1'); // TODO: Try gpt-4o-mini-transcribe for 2-5x speed
+    formData.append('language', 'en'); // Skip auto-detection for 100-500ms savings
+    formData.append('temperature', '0'); // Deterministic output
 
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',

@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: echo-feedback-api
+    runtime: node
+    buildCommand: cd backend && bun install
+    startCommand: cd backend && bun run src/index.ts
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SUMMARIZER_MODEL
+        value: gpt-4o-mini
+      - key: DATABASE_URL
+        value: file:./data/db.sqlite
+      - key: NODE_ENV
+        value: production
+    disk:
+      name: data
+      mountPath: /opt/render/project/src/backend/data
+      sizeGB: 10

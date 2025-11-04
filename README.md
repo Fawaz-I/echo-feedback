@@ -10,6 +10,8 @@ Voice-first feedback SDK and API for web and mobile apps.
 - 🔊 Text-to-speech summaries (ElevenLabs, optional)
 - 🪝 Webhook integrations (Slack, Jira, GitHub, Notion)
 - 📦 React SDK & Web Component
+- 🚀 Fire-and-forget UX (users don't wait for processing)
+- 🎯 Automatic categorization & sentiment analysis
 
 ## Project Structure
 
