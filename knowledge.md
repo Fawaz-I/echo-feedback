@@ -151,7 +151,7 @@ import { EchoFeedback } from "@echo-feedback/react";
 | ---- | ---------------------------------------------------- | ------ |
 | 1–2  | Frontend record/upload widget + backend API skeleton | ✅ Complete |
 | 3–4  | Integrate ElevenLabs STT + GPT summarization         | ✅ Complete |
-| 5–6  | Add ElevenLabs TTS + webhook delivery                |
+| 5–6  | Add ElevenLabs TTS + webhook delivery                | ✅ Webhooks Complete |
 | 7    | Build Web Component + theming                        |
 | 8–10 | Admin UI, tests, docs, deploy                        |
 
@@ -187,11 +187,20 @@ Return JSON with:
 - Environment variables:
   - `OPENAI_API_KEY` (required)
   - `ELEVEN_API_KEY` (optional - use ElevenLabs instead of Whisper)
-  - `SUMMARIZER_MODEL` (default: gpt-5-nano-2025-08-07)
-  - `DATABASE_URL`
-  - `WEBHOOK_SECRET`
+  - `SUMMARIZER_MODEL` (default: gpt-4o-mini)
+  - `DATABASE_URL` (SQLite path, default: ./data.db)
+  - `WEBHOOK_SECRET` (for HMAC signatures)
 - Enforce ≤120 s recording limit.
 - Log STT + GPT duration for observability.
+
+### Webhook System
+
+- **Auto-format** for Slack, Jira, GitHub, Notion based on URL detection
+- **HMAC signatures** with `X-Echo-Signature` header for security
+- **Async delivery** - doesn't block feedback response
+- **Status tracking** - `sent`, `failed`, or `none` in database
+- **Test endpoint** - `POST /api/apps/:appId/test-webhook`
+- **App management** - Register apps with webhook URLs via `POST /api/apps`
 
 ---
 

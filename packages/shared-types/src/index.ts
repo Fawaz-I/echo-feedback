@@ -18,6 +18,7 @@ export type FeedbackCategory = 'bug' | 'feature' | 'praise' | 'other';
 export type FeedbackSentiment = 'positive' | 'neutral' | 'negative';
 export type FeedbackPriority = 'low' | 'medium' | 'high';
 export type FeedbackSource = 'web' | 'ios' | 'android';
+export type WebhookStatus = 'sent' | 'failed' | 'none';
 
 export interface FeedbackResponse {
   id: string;
@@ -44,7 +45,7 @@ export interface FeedbackItem {
   priority: FeedbackPriority;
   summary_tts_url?: string;
   metadata: FeedbackMetadata;
-  webhook_status: 'sent' | 'failed' | 'none';
+  webhook_status: WebhookStatus;
 }
 
 export interface App {

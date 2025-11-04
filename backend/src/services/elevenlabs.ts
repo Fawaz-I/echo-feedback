@@ -36,7 +36,7 @@ export async function transcribeAudio(
       throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
     }
 
-    const data: TranscriptionResponse = await response.json();
+    const data = await response.json() as TranscriptionResponse;
     
     if (!data.text) {
       throw new Error('No transcript text in ElevenLabs response');
