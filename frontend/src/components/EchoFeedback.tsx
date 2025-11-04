@@ -27,7 +27,6 @@ function EchoFeedback({
   subtitle,
   statusIdle = 'Click to start recording',
   statusRecording = 'Click to stop recording',
-  statusProcessing = 'Processing...',
   errorMessage,
   onRecordingStop,
   onComplete 

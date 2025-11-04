@@ -28,25 +28,23 @@ if (USE_ELEVENLABS) {
   console.log('🎙️  Using OpenAI Whisper for transcription');
 }
 
-// Enable CORS for frontend development
-app.use('/*', cors());
-
-// Health check endpoint
+// Health check endpoint - must be before CORS to ensure it's matched
 app.get('/health', (c) => {
   return c.json({
     status: 'ok',
+    api: 'Echo Feedback API',
+    version: '1.0.0',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
+    transcription_service: USE_ELEVENLABS ? 'ElevenLabs' : 'OpenAI Whisper',
   });
 });
 
+// Enable CORS for frontend development
+app.use('/*', cors());
+
 // Serve uploaded audio files
 app.use('/uploads/*', serveStatic({ root: './' }));
-
-// Health check endpoint
-app.get('/health', (c) => {
-  return c.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
 
 // Feedback submission endpoint
 app.post('/api/feedback', async (c) => {
@@ -72,7 +70,7 @@ app.post('/api/feedback', async (c) => {
     const audioUrl = await saveAudioFile(audio, audioFilename);
 
     // Transcribe audio using configured service
-    const transcript = USE_ELEVENLABS 
+    const transcript = USE_ELEVENLABS
       ? await transcribeWithElevenLabs(audio)
       : await transcribeWithOpenAI(audio);
 
@@ -132,11 +130,11 @@ app.post('/api/feedback', async (c) => {
 app.get('/api/apps/:appId', async (c) => {
   const appId = c.req.param('appId');
   const app = getApp(appId);
-  
+
   if (!app) {
     return c.json({ error: 'App not found' }, 404);
   }
-  
+
   // Don't expose webhook_secret
   return c.json({
     app_id: app.app_id,
@@ -150,15 +148,15 @@ app.get('/api/apps/:appId', async (c) => {
 app.post('/api/apps/:appId/test-webhook', async (c) => {
   const appId = c.req.param('appId');
   const appConfig = getApp(appId);
-  
+
   if (!appConfig) {
     return c.json({ error: 'App not found' }, 404);
   }
-  
+
   if (!appConfig.webhook_url) {
     return c.json({ error: 'No webhook configured for this app' }, 400);
   }
-  
+
   // Send test webhook
   const testFeedback: Partial<FeedbackItem> = {
     id: 'test-' + crypto.randomUUID(),
@@ -172,12 +170,12 @@ app.post('/api/apps/:appId/test-webhook', async (c) => {
     audio_url: '/uploads/test.webm',
     metadata: {},  // Empty metadata for test
   };
-  
+
   const result = await sendWebhook(testFeedback, {
     url: appConfig.webhook_url,
     secret: appConfig.webhook_secret,
   });
-  
+
   return c.json({
     success: result.success,
     error: result.error,
@@ -189,11 +187,11 @@ app.post('/api/apps', async (c) => {
   try {
     const body = await c.req.json();
     const { app_id, name, webhook_url, webhook_secret } = body;
-    
+
     if (!app_id || !name) {
       return c.json({ error: 'Missing required fields: app_id, name' }, 400);
     }
-    
+
     // Validate webhook URL if provided
     if (webhook_url) {
       try {
@@ -202,11 +200,11 @@ app.post('/api/apps', async (c) => {
         return c.json({ error: 'Invalid webhook URL format' }, 400);
       }
     }
-    
+
     const appData = { app_id, name, webhook_url, webhook_secret };
     const { upsertApp } = await import('./services/database');
     const saved = upsertApp(appData);
-    
+
     return c.json({
       app_id: saved.app_id,
       name: saved.name,
@@ -219,11 +217,17 @@ app.post('/api/apps', async (c) => {
   }
 });
 
-const port = process.env.PORT || 3001;
+// 404 handler - must be last
+app.notFound((c) => {
+  return c.json({ error: 'Not Found' }, 404);
+});
 
-console.log(`🎙️  Echo Feedback API running on port ${port}`);
+const port = parseInt(process.env.PORT || '3001', 10);
 
-export default {
+const server = Bun.serve({
   port,
   fetch: app.fetch,
-};
+  hostname: '0.0.0.0', // Bind to all interfaces, not just localhost
+});
+
+console.log(`🎙️  Echo Feedback API running on port ${server.port}`);

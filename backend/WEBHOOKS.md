@@ -2,6 +2,8 @@
 
 Echo Feedback can automatically send feedback data to external systems via webhooks.
 
+> 📚 **For complete integration examples**, see [WEBHOOK_EXAMPLES.md](../docs/WEBHOOK_EXAMPLES.md) with copy-paste-ready code for Bun, Express, Next.js, and more.
+
 ## Supported Platforms
 
 - **Slack** - Posts formatted messages to channels
