@@ -25,9 +25,10 @@ and exposes a developer-friendly widget + backend API that can integrate into an
   - `/api/feedback` — handles file uploads and processing
   - `/api/webhook` — delivers structured data to external systems
 - **Services:**
-  - ElevenLabs **Speech-to-Text (STT)** for transcription
+  - OpenAI **Whisper** for transcription (default)
   - GPT-4o-mini for summarization + classification
-  - ElevenLabs **Text-to-Speech (TTS)** for voiced summaries
+  - ElevenLabs **Speech-to-Text** (optional, if ELEVEN_API_KEY is set)
+  - ElevenLabs **Text-to-Speech (TTS)** for voiced summaries (optional)
 - **Storage:** SQLite or Turso for metadata, S3-compatible storage for audio
 - **Integrations:** Slack, Jira, GitHub, Notion via webhooks
 
@@ -184,8 +185,8 @@ Return JSON with:
 - All models return JSON only, never prose.
 - Strict TypeScript types for requests/responses.
 - Environment variables:
-  - `ELEVEN_API_KEY`
-  - `OPENAI_API_KEY`
+  - `OPENAI_API_KEY` (required)
+  - `ELEVEN_API_KEY` (optional - use ElevenLabs instead of Whisper)
   - `SUMMARIZER_MODEL` (default: gpt-5-nano-2025-08-07)
   - `DATABASE_URL`
   - `WEBHOOK_SECRET`

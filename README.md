@@ -5,9 +5,9 @@ Voice-first feedback SDK and API for web and mobile apps.
 ## Features
 
 - 🎤 Voice recording with MediaRecorder API
-- 📝 Speech-to-text transcription (ElevenLabs)
+- 📝 Speech-to-text transcription (OpenAI Whisper by default, ElevenLabs optional)
 - 🤖 AI-powered summarization & classification (GPT-4o-mini)
-- 🔊 Text-to-speech summaries (ElevenLabs)
+- 🔊 Text-to-speech summaries (ElevenLabs, optional)
 - 🪝 Webhook integrations (Slack, Jira, GitHub, Notion)
 - 📦 React SDK & Web Component
 
@@ -29,8 +29,8 @@ echo-feedback/
 ### Prerequisites
 
 - [Bun](https://bun.sh) >= 1.0.0
-- ElevenLabs API key
-- OpenAI API key
+- OpenAI API key (required)
+- ElevenLabs API key (optional - for alternative transcription)
 
 ### Installation
 
@@ -85,7 +85,7 @@ Submit voice feedback.
 
 - **Backend:** Bun, Hono, SQLite/Turso
 - **Frontend:** React, TypeScript, Vite
-- **AI Services:** ElevenLabs (STT/TTS), OpenAI (gpt-5-nano-2025-08-07)
+- **AI Services:** OpenAI Whisper (transcription) & GPT (classification), ElevenLabs (optional STT/TTS)
 - **Storage:** S3-compatible for audio files
 
 ## License

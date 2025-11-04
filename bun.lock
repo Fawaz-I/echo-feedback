@@ -11,10 +11,11 @@
       "name": "@echo-feedback/backend",
       "version": "0.1.0",
       "dependencies": {
+        "@echo-feedback/types": "workspace:*",
         "hono": "^4.0.0",
       },
       "devDependencies": {
-        "@types/bun": "latest",
+        "@types/bun": "^1.3.1",
       },
     },
     "frontend": {

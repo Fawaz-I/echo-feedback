@@ -36,8 +36,10 @@ npm-debug.log*
 
 # Uploaded files
 uploads/*
+backend/uploads/*
 summaries/*
 
 # Keep directory structure
 !uploads/.gitkeep
+!backend/uploads/.gitkeep
 !summaries/.gitkeep

@@ -1,10 +1,10 @@
 import type { GPTClassification } from '@echo-feedback/types';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const SUMMARIZER_MODEL = process.env.SUMMARIZER_MODEL || 'gpt-5-nano-2025-08-07';
+const SUMMARIZER_MODEL = process.env.SUMMARIZER_MODEL || 'gpt-4o-mini';
 
 if (!OPENAI_API_KEY) {
-  console.warn('⚠️  OPENAI_API_KEY not set. Summarization will fail.');
+  console.warn('⚠️  OPENAI_API_KEY not set. Whisper transcription and GPT summarization will fail.');
 }
 
 const SYSTEM_PROMPT = 'You are a classifier for user feedback. Output strict JSON only.';
@@ -20,6 +20,52 @@ interface OpenAIResponse {
       content: string;
     };
   }>;
+}
+
+interface WhisperResponse {
+  text: string;
+}
+
+/**
+ * Transcribe audio using OpenAI Whisper API
+ */
+export async function transcribeAudio(
+  audioBlob: Blob
+): Promise<string> {
+  const startTime = Date.now();
+
+  try {
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'audio.webm');
+    formData.append('model', 'whisper-1');
+
+    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenAI Whisper API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json() as WhisperResponse;
+    
+    if (!data.text) {
+      throw new Error('No transcript text in Whisper response');
+    }
+    
+    const duration = Date.now() - startTime;
+    console.log(`✅ Whisper transcription completed in ${duration}ms`);
+
+    return data.text;
+  } catch (error) {
+    console.error('❌ OpenAI Whisper transcription failed:', error);
+    throw error;
+  }
 }
 
 export async function classifyFeedback(
@@ -64,7 +110,7 @@ Return JSON with:
       throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
-    const data: OpenAIResponse = await response.json();
+    const data = await response.json() as OpenAIResponse;
     const content = data.choices[0]?.message?.content;
 
     if (!content) {

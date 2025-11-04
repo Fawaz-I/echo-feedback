@@ -1,17 +1,20 @@
 const ELEVEN_API_KEY = process.env.ELEVEN_API_KEY;
 
-if (!ELEVEN_API_KEY) {
-  console.warn('⚠️  ELEVEN_API_KEY not set. Transcription will fail.');
-}
-
 interface TranscriptionResponse {
   text: string;
   language_code: string;
 }
 
+/**
+ * Transcribe audio using ElevenLabs STT (optional, requires ELEVEN_API_KEY)
+ */
 export async function transcribeAudio(
   audioBlob: Blob
 ): Promise<string> {
+  if (!ELEVEN_API_KEY) {
+    throw new Error('ELEVEN_API_KEY not configured. Cannot use ElevenLabs transcription.');
+  }
+
   const startTime = Date.now();
 
   try {
@@ -23,7 +26,7 @@ export async function transcribeAudio(
     const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text/convert', {
       method: 'POST',
       headers: {
-        'xi-api-key': ELEVEN_API_KEY!,
+        'xi-api-key': ELEVEN_API_KEY,
       },
       body: formData,
     });
@@ -40,7 +43,7 @@ export async function transcribeAudio(
     }
     
     const duration = Date.now() - startTime;
-    console.log(`✅ STT transcription completed in ${duration}ms (${data.language_code})`);
+    console.log(`✅ ElevenLabs STT transcription completed in ${duration}ms (${data.language_code})`);
 
     return data.text;
   } catch (error) {

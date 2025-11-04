@@ -1,11 +1,23 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { serveStatic } from 'hono/bun';
-import { classifyFeedback } from './services/openai';
-import { transcribeAudio } from './services/elevenlabs';
+import { classifyFeedback, transcribeAudio as transcribeWithOpenAI } from './services/openai';
+import { transcribeAudio as transcribeWithElevenLabs } from './services/elevenlabs';
 import { saveAudioFile } from './services/storage';
 
 const app = new Hono();
+
+// Determine which transcription service to use
+const USE_ELEVENLABS = process.env.ELEVEN_API_KEY ? true : false;
+
+if (USE_ELEVENLABS) {
+  console.log('🎙️  Using ElevenLabs for transcription');
+} else {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is required when not using ElevenLabs. Please set it in your .env file.');
+  }
+  console.log('🎙️  Using OpenAI Whisper for transcription');
+}
 
 // Enable CORS for frontend development
 app.use('/*', cors());
@@ -41,8 +53,10 @@ app.post('/api/feedback', async (c) => {
     const audioFilename = `${feedbackId}.webm`;
     const audioUrl = await saveAudioFile(audio, audioFilename);
 
-    // Transcribe audio using ElevenLabs STT
-    const transcript = await transcribeAudio(audio);
+    // Transcribe audio using configured service
+    const transcript = USE_ELEVENLABS 
+      ? await transcribeWithElevenLabs(audio)
+      : await transcribeWithOpenAI(audio);
 
     // Classify feedback using OpenAI
     const classification = await classifyFeedback(transcript);
