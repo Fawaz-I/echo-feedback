@@ -4,6 +4,7 @@ import { template } from './template';
 import baseStyles from './themes/base.css?inline';
 import cardStyles from './themes/card.css?inline';
 import compactStyles from './themes/compact.css?inline';
+import smallStyles from './themes/small.css?inline';
 
 export class EchoFeedbackElement extends HTMLElement {
   private shadow: ShadowRoot;
@@ -15,7 +16,19 @@ export class EchoFeedbackElement extends HTMLElement {
 
   // Observed attributes
   static get observedAttributes() {
-    return ['app-id', 'endpoint', 'max-duration-sec', 'variant', 'auto-upload'];
+    return [
+      'app-id', 
+      'endpoint', 
+      'max-duration-sec', 
+      'variant', 
+      'auto-upload',
+      'title',
+      'subtitle',
+      'status-idle',
+      'status-recording',
+      'status-processing',
+      'error-message'
+    ];
   }
 
   constructor() {
@@ -62,16 +75,39 @@ export class EchoFeedbackElement extends HTMLElement {
       this.setState('recording');
       this.emit('echo-start', undefined);
 
-      // Start timer
-      this.timer = window.setInterval(() => {
-        this.elapsed++;
-        this.updateTimer();
-        this.emit('echo-progress', { elapsed: this.elapsed, max: this.maxDuration });
+      const startTime = Date.now();
+      
+      // Update progress bar smoothly (every 50ms for smooth animation)
+      const progressInterval = window.setInterval(() => {
+        const elapsedMs = Date.now() - startTime;
+        this.elapsed = Math.floor(elapsedMs / 1000);
+        const progress = (elapsedMs / 1000) / this.maxDuration;
+        
+        // Update progress meter smoothly
+        const meterFill = this.shadow.querySelector('[part="meter-fill"]') as HTMLElement;
+        if (meterFill) {
+          const percentage = Math.min(progress * 100, 100);
+          meterFill.style.width = `${percentage}%`;
+        }
+        
+        // Update timer text every second
+        const timerEl = this.shadow.querySelector('[part="timer"]');
+        if (timerEl) {
+          timerEl.textContent = this.formatTime(this.elapsed);
+        }
+        
+        // Emit progress event every second
+        if (elapsedMs % 1000 < 50) {
+          this.emit('echo-progress', { elapsed: this.elapsed, max: this.maxDuration });
+        }
 
         if (this.elapsed >= this.maxDuration) {
+          clearInterval(progressInterval);
           this.stop();
         }
-      }, 1000);
+      }, 50);
+      
+      this.timer = progressInterval;
     } catch (error) {
       this.handleError('Microphone access denied', error as Error);
     }
@@ -119,6 +155,30 @@ export class EchoFeedbackElement extends HTMLElement {
     return this.hasAttribute('auto-upload');
   }
 
+  private get title(): string {
+    return this.getAttribute('title') || 'Share Your Feedback';
+  }
+
+  private get subtitle(): string | null {
+    return this.getAttribute('subtitle');
+  }
+
+  private get statusIdle(): string {
+    return this.getAttribute('status-idle') || 'Click to start recording';
+  }
+
+  private get statusRecording(): string {
+    return this.getAttribute('status-recording') || 'Recording... Click to stop';
+  }
+
+  private get statusProcessing(): string {
+    return this.getAttribute('status-processing') || 'Processing your feedback...';
+  }
+
+  private get errorMessage(): string | null {
+    return this.getAttribute('error-message');
+  }
+
   // State management
   private setState(newState: RecordingState) {
     this.state = newState;
@@ -134,7 +194,8 @@ export class EchoFeedbackElement extends HTMLElement {
 
   private handleError(message: string, error?: Error) {
     this.setState('error');
-    this.emit('echo-error', { message, error });
+    const displayMessage = this.errorMessage || message;
+    this.emit('echo-error', { message: displayMessage, error });
   }
 
   private async handleStop() {
@@ -142,7 +203,7 @@ export class EchoFeedbackElement extends HTMLElement {
 
     // Check size
     if (audioBlob.size > 5 * 1024 * 1024) {
-      this.handleError('Recording too large (max 5MB)');
+      this.handleError(this.errorMessage || 'Recording too large (max 5MB)');
       return;
     }
 
@@ -191,6 +252,7 @@ export class EchoFeedbackElement extends HTMLElement {
   private displayResults(data: FeedbackResponse) {
     const transcriptSlot = this.shadow.querySelector('[name="transcript"]');
     const summarySlot = this.shadow.querySelector('[name="summary"]');
+    const resultsSection = this.shadow.querySelector('.ef-results');
     
     if (transcriptSlot && !this.querySelector('[slot="transcript"]')) {
       const p = document.createElement('p');
@@ -209,6 +271,11 @@ export class EchoFeedbackElement extends HTMLElement {
       div.slot = 'summary';
       this.appendChild(div);
     }
+
+    // Show results section when content is added
+    if (resultsSection && (this.querySelector('[slot="transcript"]') || this.querySelector('[slot="summary"]'))) {
+      (resultsSection as HTMLElement).style.display = 'flex';
+    }
   }
 
   private cleanup() {
@@ -223,14 +290,26 @@ export class EchoFeedbackElement extends HTMLElement {
   }
 
   private render() {
+    let variantStyles = cardStyles;
+    if (this.variant === 'compact') {
+      variantStyles = compactStyles;
+    } else if (this.variant === 'small') {
+      variantStyles = smallStyles;
+    }
+
     this.shadow.innerHTML = template({
       state: this.state,
       elapsed: this.elapsed,
       maxDuration: this.maxDuration,
       variant: this.variant,
+      title: this.title,
+      subtitle: this.subtitle,
+      statusIdle: this.statusIdle,
+      statusRecording: this.statusRecording,
+      statusProcessing: this.statusProcessing,
       styles: {
         base: baseStyles,
-        variant: this.variant === 'card' ? cardStyles : compactStyles,
+        variant: variantStyles,
       },
     });
   }

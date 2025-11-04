@@ -4,17 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Echo Feedback Web Component</title>
+  <!-- Prism.js for syntax highlighting -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
   <style>
     body {
       margin: 0;
       padding: 2rem;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0a0a0a;
-      color: #fafafa;
+      background: #fafafa;
+      color: #0a0a0a;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       gap: 2rem;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     header {
@@ -22,16 +26,25 @@
     }
 
     h1 {
-      font-size: 3rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #0a0a0a;
       margin: 0 0 0.5rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+
+    h1 svg {
+      width: 2.5rem;
+      height: 2.5rem;
     }
 
     .subtitle {
-      color: #a3a3a3;
-      font-size: 1.1rem;
+      color: #737373;
+      font-size: 1rem;
+      margin: 0;
     }
 
     .examples {
@@ -44,44 +57,66 @@
     }
 
     .example {
-      background: #171717;
-      border: 1px solid #404040;
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
       border-radius: 12px;
       padding: 1.5rem;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
     }
 
     .example h3 {
       margin-top: 0;
-      color: #667eea;
+      color: #0a0a0a;
+      font-size: 1.125rem;
+      font-weight: 600;
     }
 
     .code {
-      background: #0a0a0a;
-      border: 1px solid #262626;
+      background: #2d2d2d;
+      border: 1px solid #404040;
       border-radius: 8px;
-      padding: 1rem;
       margin: 1rem 0;
       overflow-x: auto;
+    }
+
+    .code pre {
+      margin: 0;
+      padding: 1rem;
       font-size: 0.875rem;
-      font-family: 'Monaco', 'Menlo', monospace;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      background: transparent;
+      overflow-x: auto;
+    }
+
+    .code code {
+      font-family: inherit;
+      color: #f8f8f2;
     }
 
     .results {
       margin-top: 1rem;
       font-size: 0.875rem;
-      color: #a3a3a3;
+      color: #404040;
     }
 
     /* Custom theme example */
     echo-feedback[theme="custom"] {
-      --ef-accent: #10b981;
-      --ef-radius: 24px;
+      --ef-accent: #0a0a0a;
+      --ef-radius: 12px;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>🎙️ Echo Feedback</h1>
+    <h1>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+      Echo Feedback
+    </h1>
     <p class="subtitle">Web Component Examples</p>
   </header>
 
@@ -90,15 +125,17 @@
     <div class="example">
       <h3>Default Card Variant</h3>
       <div class="code">
-        &lt;echo-feedback<br>
-        &nbsp;&nbsp;app-id="demo_app"<br>
-        &nbsp;&nbsp;endpoint="http://localhost:3001"<br>
-        &nbsp;&nbsp;auto-upload&gt;<br>
-        &lt;/echo-feedback&gt;
+        <pre><code class="language-html">&lt;echo-feedback
+  app-id="demo_app"
+  endpoint="http://localhost:3001"
+  max-duration-sec="30"
+  auto-upload&gt;
+&lt;/echo-feedback&gt;</code></pre>
       </div>
       <echo-feedback
         app-id="demo_app"
         endpoint="http://localhost:3001"
+        max-duration-sec="30"
         auto-upload>
       </echo-feedback>
       <div class="results" id="result1"></div>
@@ -108,38 +145,59 @@
     <div class="example">
       <h3>Compact Variant</h3>
       <div class="code">
-        &lt;echo-feedback<br>
-        &nbsp;&nbsp;variant="compact"<br>
-        &nbsp;&nbsp;app-id="demo_app"<br>
-        &nbsp;&nbsp;endpoint="http://localhost:3001"&gt;<br>
-        &lt;/echo-feedback&gt;
+        <pre><code class="language-html">&lt;echo-feedback
+  variant="compact"
+  app-id="demo_app"
+  endpoint="http://localhost:3001"
+  max-duration-sec="30"&gt;
+&lt;/echo-feedback&gt;</code></pre>
       </div>
       <echo-feedback
         variant="compact"
         app-id="demo_app"
-        endpoint="http://localhost:3001">
+        endpoint="http://localhost:3001"
+        max-duration-sec="30">
       </echo-feedback>
     </div>
 
-    <!-- Example 3: Custom Slots -->
+    <!-- Example 3: Small Variant -->
+    <div class="example">
+      <h3>Small Variant</h3>
+      <div class="code">
+        <pre><code class="language-html">&lt;echo-feedback
+  variant="small"
+  app-id="demo_app"
+  endpoint="http://localhost:3001"
+  max-duration-sec="30"&gt;
+&lt;/echo-feedback&gt;</code></pre>
+      </div>
+      <echo-feedback
+        variant="small"
+        app-id="demo_app"
+        endpoint="http://localhost:3001"
+        max-duration-sec="30">
+      </echo-feedback>
+    </div>
+
+    <!-- Example 4: Custom Slots -->
     <div class="example">
       <h3>Custom Slots & Theme</h3>
       <div class="code">
-        &lt;echo-feedback theme="custom"&gt;<br>
-        &nbsp;&nbsp;&lt;div slot="header"&gt;...&lt;/div&gt;<br>
-        &nbsp;&nbsp;&lt;div slot="footer"&gt;...&lt;/div&gt;<br>
-        &lt;/echo-feedback&gt;
+        <pre><code class="language-html">&lt;echo-feedback theme="custom"&gt;
+  &lt;div slot="header"&gt;...&lt;/div&gt;
+  &lt;div slot="footer"&gt;...&lt;/div&gt;
+&lt;/echo-feedback&gt;</code></pre>
       </div>
       <echo-feedback
         theme="custom"
         app-id="demo_app"
         endpoint="http://localhost:3001"
-        max-duration-sec="60">
+        max-duration-sec="30">
         <div slot="header">
-          <h2 style="margin: 0; color: #10b981;">💬 Tell Us What You Think</h2>
-          <p style="margin: 0.5rem 0 0; color: #737373;">Up to 60 seconds</p>
+          <h2 style="margin: 0; color: #0a0a0a; font-size: 1.5rem; font-weight: 600;">Tell Us What You Think</h2>
+          <p style="margin: 0.5rem 0 0; color: #737373; font-size: 0.875rem;">Up to 30 seconds</p>
         </div>
-        <div slot="footer" style="font-size: 0.75rem; color: #737373;">
+        <div slot="footer" style="font-size: 0.875rem; color: #737373;">
           Your feedback helps us improve!
         </div>
       </echo-feedback>
@@ -147,14 +205,22 @@
   </div>
 
   <script type="module" src="/src/index.ts"></script>
+  <!-- Prism.js for syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
   <script>
+    // Initialize Prism highlighting
+    if (typeof Prism !== 'undefined') {
+      Prism.highlightAll();
+    }
+
     // Listen to events
     document.querySelectorAll('echo-feedback').forEach((el, i) => {
       el.addEventListener('echo-complete', (e) => {
         const resultEl = document.getElementById(`result${i + 1}`);
         if (resultEl) {
           resultEl.innerHTML = `
-            <strong>✅ Feedback Received:</strong><br>
+            <strong>Feedback Received:</strong><br>
             Category: ${e.detail.category}<br>
             Sentiment: ${e.detail.sentiment}<br>
             Summary: ${e.detail.summary}

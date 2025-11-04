@@ -1,7 +1,7 @@
 import type { FeedbackResponse } from '@echo-feedback/types';
 
 export type RecordingState = 'idle' | 'recording' | 'processing' | 'error' | 'complete';
-export type Variant = 'card' | 'compact';
+export type Variant = 'card' | 'compact' | 'small';
 
 export interface EchoFeedbackEventMap {
   'echo-start': CustomEvent<void>;
@@ -18,4 +18,10 @@ export interface EchoFeedbackAttributes {
   'max-duration-sec'?: string;
   'variant'?: Variant;
   'auto-upload'?: string;
+  'title'?: string;
+  'subtitle'?: string;
+  'status-idle'?: string;
+  'status-recording'?: string;
+  'status-processing'?: string;
+  'error-message'?: string;
 }

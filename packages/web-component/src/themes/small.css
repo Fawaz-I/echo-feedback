@@ -1,0 +1,51 @@
+/* Small Variant - Ultra compact, minimal footprint */
+
+.ef-variant-small {
+  --ef-padding: 0.75rem;
+  --ef-gap: 0.5rem;
+  --ef-radius: 8px;
+  background: var(--ef-bg);
+}
+
+.ef-variant-small .ef-header {
+  margin-bottom: 0.75rem;
+}
+
+.ef-variant-small .ef-header [part="title"] {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.ef-variant-small .ef-header [part="subtitle"] {
+  display: none;
+}
+
+.ef-variant-small .ef-mic-button {
+  width: 48px;
+  height: 48px;
+}
+
+.ef-variant-small .ef-mic-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.ef-variant-small .ef-timer {
+  font-size: 1.25rem;
+  min-height: 1.75rem;
+}
+
+.ef-variant-small .ef-status {
+  font-size: 0.75rem;
+}
+
+.ef-variant-small .ef-error {
+  padding: 0.75rem;
+  font-size: 0.75rem;
+}
+
+.ef-variant-small .ef-controls {
+  gap: 0.75rem;
+}
+

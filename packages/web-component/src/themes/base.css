@@ -1,16 +1,17 @@
 /* Echo Feedback Base Theme - Customizable via CSS Variables */
 
 :host {
-  /* Colors */
+  /* Colors - Neutral shadcn-like palette */
   --ef-bg: #ffffff;
   --ef-fg: #0a0a0a;
   --ef-muted: #f5f5f5;
   --ef-muted-fg: #737373;
   --ef-border: #e5e5e5;
-  --ef-accent: #667eea;
+  --ef-accent: #0a0a0a;
   --ef-accent-fg: #ffffff;
-  --ef-error: #ef4444;
-  --ef-error-fg: #ffffff;
+  --ef-error: #991b1b;
+  --ef-error-bg: #fef2f2;
+  --ef-error-border: #fecaca;
   
   /* Spacing */
   --ef-radius: 12px;
@@ -25,7 +26,7 @@
   
   /* Shadows */
   --ef-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --ef-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --ef-shadow-lg: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   
   /* Transitions */
   --ef-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -42,6 +43,10 @@
   --ef-muted: #262626;
   --ef-muted-fg: #a3a3a3;
   --ef-border: #404040;
+  --ef-accent: #fafafa;
+  --ef-accent-fg: #0a0a0a;
+  --ef-error-bg: #7f1d1d;
+  --ef-error-border: #991b1b;
 }
 
 .ef-container {
@@ -74,12 +79,17 @@
 
 /* Error */
 .ef-error {
-  background: var(--ef-error);
-  color: var(--ef-error-fg);
+  background: var(--ef-error-bg);
+  color: var(--ef-error);
+  border: 1px solid var(--ef-error-border);
   border-radius: calc(var(--ef-radius) / 2);
   padding: 1rem;
   margin-bottom: var(--ef-gap);
   font-size: var(--ef-font-size-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 /* Controls */
@@ -93,7 +103,7 @@
 .ef-timer {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--ef-accent);
+  color: var(--ef-fg);
   font-variant-numeric: tabular-nums;
   min-height: 2.5rem;
 }
@@ -108,8 +118,8 @@
 
 .ef-meter-fill {
   height: 100%;
-  background: var(--ef-accent);
-  transition: width 0.3s ease;
+  background: var(--ef-fg);
+  transition: width 0.1s linear;
 }
 
 /* Mic Button */
@@ -121,10 +131,9 @@
   border-radius: 50%;
   width: 80px;
   height: 80px;
-  font-size: 2rem;
   cursor: pointer;
   transition: var(--ef-transition);
-  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--ef-shadow);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -132,7 +141,7 @@
 
 .ef-mic-button:hover:not(:disabled) {
   transform: scale(1.05);
-  box-shadow: 0 0 30px rgba(102, 126, 234, 0.4);
+  box-shadow: var(--ef-shadow-lg);
 }
 
 .ef-mic-button:active:not(:disabled) {
@@ -145,23 +154,33 @@
 }
 
 .ef-mic-button[data-recording="true"] {
-  background: var(--ef-error);
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
+  background: var(--ef-accent);
 }
 
 .ef-mic-icon {
   display: block;
-  line-height: 1;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.ef-mic-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ef-mic-icon.loading svg {
+  animation: spin 0.8s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .ef-status {
@@ -170,42 +189,49 @@
   margin: 0;
 }
 
-/* Results */
+/* Results - hidden by default, shown when content is available */
 .ef-results {
+  display: none;
   margin-top: var(--ef-gap);
-  display: flex;
   flex-direction: column;
   gap: calc(var(--ef-gap) / 2);
 }
 
-.ef-transcript-container:empty,
-.ef-summary-container:empty {
-  display: none;
-}
-
 .ef-transcript-container,
 .ef-summary-container {
+  display: none;
   background: var(--ef-muted);
   border-radius: calc(var(--ef-radius) / 2);
   padding: 1rem;
   font-size: var(--ef-font-size-sm);
 }
 
-/* Footer */
-.ef-footer:empty {
-  display: none;
+/* Show containers when they have slotted content */
+.ef-transcript-container:has(::slotted(*)) {
+  display: block;
 }
 
+.ef-summary-container:has(::slotted(*)) {
+  display: block;
+}
+
+/* Footer - hidden by default, shown when content is slotted */
 .ef-footer {
+  display: none;
   margin-top: var(--ef-gap);
   text-align: center;
   font-size: var(--ef-font-size-sm);
   color: var(--ef-muted-fg);
 }
 
+/* Show footer when it has slotted content */
+.ef-footer:has(::slotted(*)) {
+  display: block;
+}
+
 /* Accessibility */
 .ef-mic-button:focus-visible {
-  outline: 2px solid var(--ef-accent);
+  outline: 2px solid var(--ef-fg);
   outline-offset: 2px;
 }
 
