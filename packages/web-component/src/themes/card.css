@@ -1,0 +1,6 @@
+/* Card Variant - Default polished card style */
+
+.ef-variant-card {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}

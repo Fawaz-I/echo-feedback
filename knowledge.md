@@ -152,7 +152,7 @@ import { EchoFeedback } from "@echo-feedback/react";
 | 1–2  | Frontend record/upload widget + backend API skeleton | ✅ Complete |
 | 3–4  | Integrate ElevenLabs STT + GPT summarization         | ✅ Complete |
 | 5–6  | Add ElevenLabs TTS + webhook delivery                | ✅ Webhooks Complete |
-| 7    | Build Web Component + theming                        |
+| 7    | Build Web Component + theming                        | ✅ Complete |
 | 8–10 | Admin UI, tests, docs, deploy                        |
 
 ---
@@ -201,6 +201,17 @@ Return JSON with:
 - **Status tracking** - `sent`, `failed`, or `none` in database
 - **Test endpoint** - `POST /api/apps/:appId/test-webhook`
 - **App management** - Register apps with webhook URLs via `POST /api/apps`
+
+### Web Component (shadcn-style)
+
+- **Custom Element** - `<echo-feedback>` with Shadow DOM
+- **CSS Variables** - Full theming via `--ef-*` tokens (like shadcn)
+- **Variants** - `card` (default, polished) and `compact` (minimal)
+- **Slots** - header, trigger, transcript, summary, footer
+- **CSS Parts** - Fine-grained styling with `::part()`
+- **Events** - echo-start, echo-stop, echo-upload, echo-complete, echo-error, echo-progress
+- **Framework-agnostic** - Works with React, Vue, vanilla JS
+- **TypeScript** - Full type definitions included
 
 ---
 

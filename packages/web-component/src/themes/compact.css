@@ -1,0 +1,25 @@
+/* Compact Variant - Minimal, space-efficient */
+
+.ef-variant-compact {
+  --ef-padding: 1rem;
+  --ef-gap: 0.5rem;
+  background: var(--ef-bg);
+}
+
+.ef-variant-compact .ef-header [part="title"] {
+  font-size: var(--ef-font-size-base);
+}
+
+.ef-variant-compact .ef-header [part="subtitle"] {
+  display: none;
+}
+
+.ef-variant-compact .ef-mic-button {
+  width: 60px;
+  height: 60px;
+  font-size: 1.5rem;
+}
+
+.ef-variant-compact .ef-timer {
+  font-size: 1.5rem;
+}

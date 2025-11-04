@@ -1,0 +1,32 @@
+{
+  "name": "@echo-feedback/web",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/web.js",
+  "module": "./dist/web.esm.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/web.esm.js",
+      "require": "./dist/web.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./themes/*": "./dist/themes/*"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@echo-feedback/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
