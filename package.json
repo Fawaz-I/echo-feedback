@@ -10,7 +10,12 @@
   "scripts": {
     "dev": "bun run --filter backend dev",
     "dev:all": "bun run --filter '*' dev",
-    "build": "bun run --filter '*' build"
+    "build": "bun run --filter '*' build",
+    "test": "bun test",
+    "db:setup": "bun run scripts/setup-db.ts",
+    "db:seed": "bun run scripts/seed.ts",
+    "db:migrate": "bun run scripts/migrate.ts",
+    "uploads:clean": "bun run scripts/clean-uploads.ts"
   },
   "devDependencies": {
     "typescript": "^5.3.3"
