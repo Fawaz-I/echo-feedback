@@ -11,6 +11,9 @@
       "require": "./dist/web.js",
       "types": "./dist/index.d.ts"
     },
+    "./types": {
+      "types": "./dist/types.d.ts"
+    },
     "./themes/*": "./dist/themes/*"
   },
   "files": [
