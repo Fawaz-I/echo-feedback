@@ -1,32 +1,26 @@
 import { Hono } from 'hono';
-import { cors } from 'hono/cors';
 import { serveStatic } from 'hono/bun';
 import { classifyFeedback, transcribeAudio as transcribeWithOpenAI } from './services/openai';
 import { transcribeAudio as transcribeWithElevenLabs } from './services/elevenlabs';
 import { saveAudioFile } from './services/storage';
-import { sendWebhook } from './services/webhook';
+import { sendWebhook } from './services/webhooks';
 import { getApp, saveFeedback, updateWebhookStatus } from './services/database';
 import type { FeedbackItem } from '@echo-feedback/types';
+import { getEnvConfig, logConfigStatus } from './config/env';
+import { getCorsMiddleware } from './config/cors';
+import { MAX_AUDIO_FILE_SIZE, MAX_AUDIO_FILE_SIZE_MB, DB_INIT_APP_ID } from './config/constants';
 
 const app = new Hono();
+
+// Load and validate configuration
+const config = getEnvConfig();
+logConfigStatus(config);
 
 // Initialize database on startup
 import('./services/database').then(({ getApp }) => {
   // Trigger schema initialization
-  getApp('_init');
+  getApp(DB_INIT_APP_ID);
 });
-
-// Determine which transcription service to use
-const USE_ELEVENLABS = process.env.ELEVEN_API_KEY ? true : false;
-
-if (USE_ELEVENLABS) {
-  console.log('🎙️  Using ElevenLabs for transcription');
-} else {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is required when not using ElevenLabs. Please set it in your .env file.');
-  }
-  console.log('🎙️  Using OpenAI Whisper for transcription');
-}
 
 // Health check endpoint - must be before CORS to ensure it's matched
 app.get('/health', (c) => {
@@ -36,12 +30,12 @@ app.get('/health', (c) => {
     version: '1.0.0',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
-    transcription_service: USE_ELEVENLABS ? 'ElevenLabs' : 'OpenAI Whisper',
+    transcription_service: config.useElevenLabs ? 'ElevenLabs' : 'OpenAI Whisper',
   });
 });
 
 // Enable CORS for frontend development
-app.use('/*', cors());
+app.use('/*', getCorsMiddleware());
 
 // Serve uploaded audio files
 app.use('/uploads/*', serveStatic({ root: './' }));
@@ -58,9 +52,9 @@ app.post('/api/feedback', async (c) => {
       return c.json({ error: 'Missing required fields: appId, audio' }, 400);
     }
 
-    // Validate file size (5 MB max)
-    if (audio.size > 5 * 1024 * 1024) {
-      return c.json({ error: 'Audio file too large. Max 5 MB.' }, 400);
+    // Validate file size
+    if (audio.size > MAX_AUDIO_FILE_SIZE) {
+      return c.json({ error: `Audio file too large. Max ${MAX_AUDIO_FILE_SIZE_MB}MB.` }, 400);
     }
 
     const feedbackId = crypto.randomUUID();
@@ -70,7 +64,7 @@ app.post('/api/feedback', async (c) => {
     const audioUrl = await saveAudioFile(audio, audioFilename);
 
     // Transcribe audio using configured service
-    const transcript = USE_ELEVENLABS
+    const transcript = config.useElevenLabs
       ? await transcribeWithElevenLabs(audio)
       : await transcribeWithOpenAI(audio);
 
@@ -222,10 +216,8 @@ app.notFound((c) => {
   return c.json({ error: 'Not Found' }, 404);
 });
 
-const port = parseInt(process.env.PORT || '3001', 10);
-
 const server = Bun.serve({
-  port,
+  port: config.port,
   fetch: app.fetch,
   hostname: '0.0.0.0', // Bind to all interfaces, not just localhost
 });

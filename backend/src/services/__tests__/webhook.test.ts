@@ -1,5 +1,5 @@
 import { describe, test, expect, mock } from 'bun:test';
-import { deliverWebhook, formatWebhookPayload } from '../webhook';
+import { deliverWebhook, formatWebhookPayload } from '../webhooks';
 import type { FeedbackItem } from '@echo-feedback/types';
 
 describe('Webhook Service', () => {

@@ -1,37 +1,13 @@
-import type { FeedbackItem } from '@echo-feedback/types';
-import { createHmac } from 'node:crypto';
-
-interface WebhookConfig {
-  url: string;
-  secret?: string;
-}
-
-interface WebhookPayload {
-  id: string;
-  appId: string;
-  timestamp: string;
-  transcript: string;
-  summary: string;
-  category: string;
-  sentiment: string;
-  priority: string;
-  audioUrl: string;
-  metadata: Record<string, unknown> | Record<string, string | undefined>;
-}
-
 /**
- * Generate HMAC signature for webhook verification
+ * Webhook payload formatters for different platforms
  */
-function generateSignature(payload: string, secret: string): string {
-  return createHmac('sha256', secret)
-    .update(payload)
-    .digest('hex');
-}
+
+import type { WebhookPayload } from './types';
 
 /**
  * Format payload for Slack
  */
-function formatSlackPayload(feedback: WebhookPayload): unknown {
+export function formatSlackPayload(feedback: WebhookPayload): unknown {
   const emoji = {
     positive: '😊',
     neutral: '😐',
@@ -103,7 +79,7 @@ function formatSlackPayload(feedback: WebhookPayload): unknown {
 /**
  * Format payload for Jira (creates issue)
  */
-function formatJiraPayload(feedback: WebhookPayload): unknown {
+export function formatJiraPayload(feedback: WebhookPayload): unknown {
   return {
     fields: {
       project: {
@@ -171,7 +147,7 @@ function formatJiraPayload(feedback: WebhookPayload): unknown {
 /**
  * Format payload for GitHub (creates issue)
  */
-function formatGitHubPayload(feedback: WebhookPayload): unknown {
+export function formatGitHubPayload(feedback: WebhookPayload): unknown {
   const labels = [feedback.category, feedback.sentiment, `priority-${feedback.priority}`];
 
   return {
@@ -184,7 +160,7 @@ function formatGitHubPayload(feedback: WebhookPayload): unknown {
 /**
  * Format payload for Notion (creates database entry)
  */
-function formatNotionPayload(feedback: WebhookPayload, databaseId: string): unknown {
+export function formatNotionPayload(feedback: WebhookPayload, databaseId: string): unknown {
   return {
     parent: { database_id: databaseId },
     properties: {
@@ -240,24 +216,7 @@ function formatNotionPayload(feedback: WebhookPayload, databaseId: string): unkn
 /**
  * Detect webhook type from URL and format accordingly
  */
-export function formatWebhookPayload(feedback: Partial<FeedbackItem>, webhookUrl: string): unknown {
-  const payload: WebhookPayload = {
-    id: feedback.id!,
-    appId: feedback.app_id!,
-    timestamp: feedback.created_at || new Date().toISOString(),
-    transcript: feedback.transcript!,
-    summary: feedback.summary!,
-    category: feedback.category!,
-    sentiment: feedback.sentiment!,
-    priority: feedback.priority!,
-    audioUrl: feedback.audio_url!,
-    metadata: (feedback.metadata || {}) as Record<string, unknown>,
-  };
-  
-  return formatPayload(payload, webhookUrl);
-}
-
-function formatPayload(feedback: WebhookPayload, webhookUrl: string): unknown {
+export function formatPayload(feedback: WebhookPayload, webhookUrl: string): unknown {
   const url = webhookUrl.toLowerCase();
 
   if (url.includes('slack.com')) {
@@ -275,102 +234,4 @@ function formatPayload(feedback: WebhookPayload, webhookUrl: string): unknown {
 
   // Generic format for unknown webhooks
   return feedback;
-}
-
-/**
- * Deliver webhook
- */
-export async function deliverWebhook(
-  webhookUrl: string,
-  feedback: Partial<FeedbackItem>,
-  secret?: string
-): Promise<{ status: 'sent' | 'failed'; error?: string }> {
-  const result = await sendWebhook(feedback, { url: webhookUrl, secret });
-  return {
-    status: result.success ? 'sent' : 'failed',
-    error: result.error,
-  };
-}
-
-/**
- * Send webhook with retry logic
- */
-export async function sendWebhook(
-  feedback: Partial<FeedbackItem>,
-  config: WebhookConfig
-): Promise<{ success: boolean; error?: string }> {
-  if (!config.url) {
-    return { success: false, error: 'No webhook URL configured' };
-  }
-
-  const startTime = Date.now();
-
-  try {
-    const payload: WebhookPayload = {
-      id: feedback.id!,
-      appId: feedback.app_id!,
-      timestamp: typeof feedback.created_at === 'string' ? feedback.created_at : new Date().toISOString(),
-      transcript: feedback.transcript!,
-      summary: feedback.summary!,
-      category: feedback.category!,
-      sentiment: feedback.sentiment!,
-      priority: feedback.priority!,
-      audioUrl: feedback.audio_url!,
-      metadata: (feedback.metadata || {}) as Record<string, unknown>,
-    };
-
-    const formattedPayload = formatPayload(payload, config.url);
-    const payloadString = JSON.stringify(formattedPayload);
-
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'User-Agent': 'EchoFeedback/1.0',
-    };
-
-    // Add HMAC signature if secret is provided
-    if (config.secret) {
-      const signature = generateSignature(payloadString, config.secret);
-      headers['X-Echo-Signature'] = `sha256=${signature}`;
-      headers['X-Echo-Timestamp'] = Date.now().toString();
-    }
-
-    const response = await fetch(config.url, {
-      method: 'POST',
-      headers,
-      body: payloadString,
-    });
-
-    const duration = Date.now() - startTime;
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(
-        `❌ Webhook failed (${response.status}) in ${duration}ms:`,
-        errorText.substring(0, 200)
-      );
-      return { success: false, error: `HTTP ${response.status}: ${errorText}` };
-    }
-
-    console.log(`✅ Webhook delivered in ${duration}ms to ${config.url}`);
-    return { success: true };
-  } catch (error) {
-    const duration = Date.now() - startTime;
-    console.error(`❌ Webhook error after ${duration}ms:`, error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-}
-
-/**
- * Verify incoming webhook signature
- */
-export function verifyWebhookSignature(
-  payload: string,
-  signature: string,
-  secret: string
-): boolean {
-  const expectedSignature = `sha256=${generateSignature(payload, secret)}`;
-  return signature === expectedSignature;
 }
